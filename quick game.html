@@ -1,0 +1,474 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Quick Game — Neomorphic Landing</title>
+  <style>
+    /* =========================
+       VARIABLES & BASE
+       ========================= */
+    :root{
+      --bg-1: #1b0630;    /* dark purple */
+      --bg-2: #3b1a6f;    /* mid purple */
+      --accent: #9b6cff;  /* bright purple */
+      --muted: #bda9ff;
+      --card: #2b163f;
+      --glass: rgba(255,255,255,0.03);
+      --soft-light: rgba(255,255,255,0.06);
+      --soft-dark: rgba(0,0,0,0.45);
+      --text: #f6f4ff;
+      --radius-lg: 18px;
+      --radius-md: 12px;
+      --shadow-3d: 18px;
+      --transition-fast: 220ms cubic-bezier(.2,.9,.3,1);
+      --blur: 14px;
+    }
+
+    *{box-sizing:border-box}
+    html,body{height:100%}
+    body{
+      margin:0;
+      font-family:Inter, ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
+      color:var(--text);
+      background: radial-gradient(1200px 600px at 10% 10%, rgba(155,108,255,0.12), transparent 8%),
+                  radial-gradient(1000px 500px at 90% 90%, rgba(59,26,111,0.14), transparent 8%),
+                  linear-gradient(180deg,var(--bg-1),var(--bg-2));
+      -webkit-font-smoothing:antialiased;
+      -moz-osx-font-smoothing:grayscale;
+      padding:32px;
+      display:flex;
+      justify-content:center;
+    }
+
+    .page{
+      width:100%;
+      max-width:1200px;
+      margin:0 auto;
+      display:grid;
+      grid-template-columns: 1fr;
+      gap:28px;
+      align-items:start;
+    }
+
+    /* =========================
+       NEO (NEOMORPHIC) UTILS
+       ========================= */
+    .neo {
+      background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(0,0,0,0.08));
+      border-radius:var(--radius-lg);
+      padding:18px;
+      box-shadow:
+        12px 12px 30px rgba(0,0,0,0.45),
+        -8px -8px 24px rgba(255,255,255,0.03);
+      transition: transform var(--transition-fast), box-shadow var(--transition-fast);
+      transform-style: preserve-3d;
+      perspective: 1000px;
+      border: 1px solid rgba(255,255,255,0.03);
+      backdrop-filter: blur(var(--blur));
+    }
+
+    .neo:hover{
+      transform: translateY(-6px) translateZ(8px) scale(1.006);
+      box-shadow:
+        22px 22px 40px rgba(0,0,0,0.6),
+        -12px -12px 40px rgba(155,108,255,0.06);
+    }
+
+    .neo-pressed{
+      box-shadow: inset 8px 8px 18px rgba(0,0,0,0.5),
+                  inset -6px -6px 12px rgba(255,255,255,0.02);
+      transform: translateY(0);
+    }
+
+    /* small neo variant */
+    .neo-sm{
+      border-radius:var(--radius-md);
+      padding:12px;
+      box-shadow:10px 10px 24px rgba(0,0,0,0.45), -6px -6px 18px rgba(255,255,255,0.02);
+    }
+
+    /* =========================
+       HEADER / HERO
+       ========================= */
+    header.hero{
+      display:flex;
+      gap:22px;
+      align-items:center;
+    }
+    .hero-left{
+      flex:1;
+    }
+    .hero h1{
+      margin:0 0 12px 0;
+      font-size:clamp(26px,5.5vw,44px);
+      line-height:1.05;
+      letter-spacing:-0.02em;
+      color:var(--text);
+    }
+    .tagline{
+      color:var(--muted);
+      margin-bottom:18px;
+      font-size:1.05rem;
+    }
+
+    .cta-group{display:flex;gap:12px;flex-wrap:wrap}
+    .btn{
+      display:inline-flex;
+      align-items:center;
+      gap:10px;
+      padding:12px 18px;
+      border-radius:999px;
+      cursor:pointer;
+      font-weight:600;
+      border: none;
+      background: linear-gradient(180deg,var(--accent), #6f4cff);
+      color:white;
+      box-shadow: 0 8px 22px rgba(107,66,255,0.18), 0 2px 0 rgba(255,255,255,0.03) inset;
+      transition: transform var(--transition-fast), box-shadow var(--transition-fast);
+    }
+    .btn.ghost{
+      background:transparent;
+      border:1px solid rgba(255,255,255,0.06);
+      color:var(--muted);
+      box-shadow: 8px 8px 18px rgba(0,0,0,0.4), -6px -6px 12px rgba(255,255,255,0.02);
+    }
+    .btn:hover{ transform: translateY(-5px) }
+
+    .hero-right{
+      width:360px;
+      min-width:260px;
+      display:flex;
+      justify-content:center;
+      align-items:center;
+    }
+
+    /* fake device mock */
+    .device {
+      width:280px;
+      height:520px;
+      border-radius:28px;
+      padding:16px;
+      background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(0,0,0,0.08));
+      box-shadow: 18px 24px 60px rgba(0,0,0,0.6), -8px -8px 24px rgba(155,108,255,0.04);
+      position:relative;
+      transform: rotateY(-18deg) rotateX(6deg) translateZ(12px);
+      transform-style: preserve-3d;
+      border:1px solid rgba(255,255,255,0.03);
+    }
+    .device .screen {
+      width:100%;
+      height:100%;
+      border-radius:14px;
+      background: linear-gradient(180deg,#23113a 0%, rgba(59,26,111,0.6) 100%);
+      overflow:hidden;
+      display:flex;
+      flex-direction:column;
+      gap:10px;
+      padding:14px;
+    }
+    .screen .top {
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+    }
+    .chip {
+      height:36px;
+      width:36px;
+      border-radius:10px;
+      background:linear-gradient(135deg,var(--accent), #7f5bff);
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      font-weight:700;
+      box-shadow:0 6px 18px rgba(99,66,255,0.18);
+    }
+    .slot {
+      background: rgba(255,255,255,0.03);
+      padding:8px;
+      border-radius:8px;
+      font-size:0.95rem;
+    }
+    .seat-grid{
+      display:grid;
+      grid-template-columns:repeat(4,1fr);
+      gap:8px;
+      margin-top:auto;
+    }
+    .seat {
+      min-height:40px;
+      border-radius:8px;
+      background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(0,0,0,0.06));
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      font-weight:600;
+      color:var(--muted);
+      box-shadow: 6px 6px 18px rgba(0,0,0,0.45), -4px -4px 12px rgba(255,255,255,0.02);
+    }
+    .seat.available{ color:#e9f6ff; background:linear-gradient(180deg,#6df0c9, #3bbd93);}
+    .seat.booked{ color:#fff; opacity:0.9; background: linear-gradient(180deg,#ff6f91,#d83b6c);}
+
+    /* =========================
+       PLANS GRID
+       ========================= */
+    .plans{
+      display:grid;
+      grid-template-columns:repeat(3,1fr);
+      gap:18px;
+    }
+    .plan-card{
+      padding:18px;
+      border-radius:16px;
+      background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(0,0,0,0.06));
+      text-align:center;
+      box-shadow: 14px 14px 36px rgba(0,0,0,0.45), -8px -8px 20px rgba(255,255,255,0.02);
+      transition: transform var(--transition-fast);
+    }
+    .plan-card.featured{
+      border: 1px solid rgba(255,255,255,0.06);
+      transform: translateY(-8px) scale(1.02);
+      background: linear-gradient(180deg, rgba(155,108,255,0.08), rgba(107,66,255,0.04));
+      box-shadow: 28px 28px 60px rgba(0,0,0,0.6), -12px -12px 40px rgba(155,108,255,0.06);
+    }
+
+    .price {
+      font-size:1.6rem;
+      font-weight:700;
+      margin-top:8px;
+    }
+    .plan-list{ margin-top:14px; text-align:left; font-size:0.95rem; color:var(--muted); }
+
+    /* =========================
+       STEPS & FAQ
+       ========================= */
+    .steps{
+      display:flex;
+      gap:12px;
+      flex-wrap:wrap;
+    }
+    .chip-step{
+      padding:10px 14px;
+      border-radius:999px;
+      background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(0,0,0,0.06));
+      box-shadow:8px 8px 22px rgba(0,0,0,0.45), -6px -6px 14px rgba(255,255,255,0.02);
+      font-weight:600;
+      color:var(--muted);
+    }
+
+    details{ background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(0,0,0,0.06));
+             border-radius:12px; padding:12px; box-shadow:8px 8px 22px rgba(0,0,0,0.45), -6px -6px 14px rgba(255,255,255,0.02);}
+    summary{ cursor:pointer; font-weight:700; color:var(--text); outline:none }
+    details[open]{ box-shadow: inset 6px 6px 18px rgba(0,0,0,0.45), -6px -6px 14px rgba(255,255,255,0.02);}
+
+    /* =========================
+       GRID LAYOUTS
+       ========================= */
+    .two-col{ display:grid; grid-template-columns: 1fr 360px; gap:18px; align-items:start; }
+    .card-space { padding:18px; }
+
+    /* =========================
+       FOOTER
+       ========================= */
+    footer{ text-align:center; color:var(--muted); padding:18px 0; font-size:0.95rem; }
+
+    /* =========================
+       RESPONSIVE
+       ========================= */
+    @media (max-width:980px){
+      .two-col{ grid-template-columns:1fr }
+      .plans{ grid-template-columns: 1fr; }
+      .device{ display:none } /* hide mock device on small screens */
+    }
+    @media (max-width:420px){
+      body{ padding:18px }
+      .hero-right{ display:none }
+      .cta-group{ flex-direction:column; align-items:flex-start }
+    }
+  </style>
+</head>
+<body>
+  <main class="page">
+
+    <!-- HERO -->
+    <section class="neo two-col">
+      <div class="hero-left card-space">
+        <h1>WELCOME TO QUICK GAME</h1>
+        <p class="tagline">BOOK. PLAY. ENJOY. — FIND GAMING CAFÉS, CHECK REAL-TIME SEAT STATUS, AND RESERVE YOUR SPOT IN SECONDS.</p>
+
+        <div class="cta-group">
+          <button class="btn" title="Find & Book">FIND & BOOK A SEAT</button>
+          <button class="btn ghost" title="List your cafe">LIST YOUR CAFÉ</button>
+        </div>
+
+        <div style="margin-top:18px; display:flex; gap:12px; flex-wrap:wrap">
+          <div class="neo-sm" style="padding:10px 12px; color:var(--muted)"><strong>2-WEEK FREE TRIAL</strong><div style="font-size:12px">For all new cafés</div></div>
+          <div class="neo-sm" style="padding:10px 12px; color:var(--muted)"><strong>NO COMMISSION</strong><div style="font-size:12px">Subscription only</div></div>
+          <div class="neo-sm" style="padding:10px 12px; color:var(--muted)"><strong>REAL-TIME TRACKING</strong><div style="font-size:12px">Upgrade to Premium</div></div>
+        </div>
+      </div>
+
+      <aside class="hero-right">
+        <div class="device neo" aria-hidden="true">
+          <div class="screen">
+            <div class="top">
+              <div class="chip">QG</div>
+              <div style="font-size:12px;color:var(--muted)">LIVE • JAIPUR</div>
+            </div>
+
+            <div style="display:flex;flex-direction:column;gap:8px;margin-top:8px">
+              <div class="slot">PS5 • 4 SEATS AVAILABLE</div>
+              <div class="slot">PC RIGS • 2 SEATS AVAILABLE</div>
+              <div class="slot">VR • 1 SEAT</div>
+            </div>
+
+            <div class="seat-grid" style="margin-top:10px">
+              <div class="seat available">S1</div>
+              <div class="seat booked">S2</div>
+              <div class="seat available">S3</div>
+              <div class="seat booked">S4</div>
+              <div class="seat available">S5</div>
+              <div class="seat available">S6</div>
+              <div class="seat booked">S7</div>
+              <div class="seat available">S8</div>
+            </div>
+
+          </div>
+        </div>
+      </aside>
+    </section>
+
+    <!-- ABOUT + PLANS -->
+    <section class="two-col">
+      <div class="neo card-space">
+        <h2 style="margin-top:0">ABOUT US</h2>
+        <p style="color:var(--muted)">Quick Game connects gamers and gaming cafés with a responsive mobile web app and a powerful admin panel. Manage seats, accept bookings, and track usage — all without complicated hardware. We help cafés increase footfall and let gamers book without phone calls.</p>
+
+        <h3 style="margin-bottom:6px">How it helps cafés</h3>
+        <ul style="color:var(--muted);margin:0;padding-left:18px">
+          <li>Fill empty seats with guaranteed bookings</li>
+          <li>Easy admin panel to manage all sessions & payments</li>
+          <li>2-week free trial — try before subscribing</li>
+        </ul>
+      </div>
+
+      <div class="neo card-space">
+        <h3 style="margin-top:0">PLANS</h3>
+        <div class="plans" style="margin-top:12px">
+          <div class="plan-card">
+            <div style="font-size:18px;font-weight:700">BASIC</div>
+            <div class="price">₹399 / 3 months</div>
+            <p style="color:var(--muted);margin-top:8px">Seat availability only</p>
+            <ul class="plan-list">
+              <li>✔ Shows seat availability to gamers</li>
+              <li>✔ Admin panel access (view only)</li>
+            </ul>
+            <div style="margin-top:12px"><button class="btn" style="width:100%">Start Free Trial</button></div>
+          </div>
+
+          <div class="plan-card featured">
+            <div style="font-size:18px;font-weight:700">STANDARD</div>
+            <div class="price">₹699 / 3 months</div>
+            <p style="color:var(--muted);margin-top:8px">Bookings + seat display</p>
+            <ul class="plan-list">
+              <li>✔ Seat availability + online booking</li>
+              <li>✔ Admin panel to manage bookings</li>
+            </ul>
+            <div style="margin-top:12px"><button class="btn" style="width:100%">Start Free Trial</button></div>
+          </div>
+
+          <div class="plan-card">
+            <div style="font-size:18px;font-weight:700">PREMIUM</div>
+            <div class="price">₹799 / 3 months</div>
+            <p style="color:var(--muted);margin-top:8px">Full features</p>
+            <ul class="plan-list">
+              <li>✔ Online bookings + seat map</li>
+              <li>✔ Real-time PC/console usage tracking</li>
+            </ul>
+            <div style="margin-top:12px"><button class="btn" style="width:100%">Start Free Trial</button></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- MOBILE APP + ADMIN PREVIEW -->
+    <section class="neo">
+      <h2 style="margin-top:0">MOBILE & WEB APP • ADMIN PANEL</h2>
+      <div style="display:flex;gap:18px;flex-wrap:wrap;margin-top:14px">
+        <div style="flex:1;min-width:260px">
+          <div class="neo-sm" style="padding:14px">
+            <strong>GAMERS</strong>
+            <p style="color:var(--muted);margin:8px 0 0 0">Search, filter by game, view live seat map, book instantly and get a QR ticket.</p>
+            <ul style="color:var(--muted);padding-left:18px">
+              <li>One-tap booking</li>
+              <li>Filters: PS5 / PC / VR</li>
+              <li>Booking history & reminders</li>
+            </ul>
+          </div>
+        </div>
+
+        <div style="flex:1;min-width:260px">
+          <div class="neo-sm" style="padding:14px">
+            <strong>CAFÉ OWNERS</strong>
+            <p style="color:var(--muted);margin:8px 0 0 0">Full admin panel: see bookings, manage seat status, view payments, and analytics.</p>
+            <ul style="color:var(--muted);padding-left:18px">
+              <li>Real-time seat control</li>
+              <li>Customer list & contact</li>
+              <li>Daily / weekly reports</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- STEPS -->
+    <section class="neo">
+      <h2 style="margin-top:0">HOW IT WORKS • USER STEPS</h2>
+      <div class="steps" style="margin-top:12px">
+        <div class="chip-step">1. OPEN APP</div>
+        <div class="chip-step">2. SEARCH CAFÉ</div>
+        <div class="chip-step">3. CHECK AVAILABILITY</div>
+        <div class="chip-step">4. BOOK & PAY</div>
+        <div class="chip-step">5. SHOW QR & PLAY</div>
+      </div>
+    </section>
+
+    <!-- FAQ -->
+    <section class="neo">
+      <h2 style="margin-top:0">FREQUENTLY ASKED QUESTIONS</h2>
+      <div style="display:grid;gap:12px;margin-top:12px">
+        <details>
+          <summary>1. What is Quick Game?</summary>
+          <div style="color:var(--muted);margin-top:8px">Quick Game is a mobile-friendly web app that helps gamers find and book gaming café seats in real time.</div>
+        </details>
+
+        <details>
+          <summary>2. How much does it cost for cafés?</summary>
+          <div style="color:var(--muted);margin-top:8px">Plans start at ₹399 / 3 months. Every new café gets a 2-week free trial.</div>
+        </details>
+
+        <details>
+          <summary>3. Do you charge commission?</summary>
+          <div style="color:var(--muted);margin-top:8px">No commission — Quick Game only charges fixed subscription fees.</div>
+        </details>
+
+        <details>
+          <summary>4. Can customers pay at the café?</summary>
+          <div style="color:var(--muted);margin-top:8px">Yes — cafés may allow Cash on Delivery or accept online payment methods if enabled.</div>
+        </details>
+
+        <details>
+          <summary>5. How does the admin panel protect customer data?</summary>
+          <div style="color:var(--muted);margin-top:8px">We store minimal customer data needed for bookings and use secure transport (HTTPS) and encryption at rest for sensitive fields.</div>
+        </details>
+
+      </div>
+    </section>
+
+    <footer class="neo-sm" style="text-align:center">
+      © Quick Game • Contact: hello@quickgame.in • WhatsApp: +91-XXXX-XXX-XXX
+    </footer>
+
+  </main>
+</body>
+</html>
